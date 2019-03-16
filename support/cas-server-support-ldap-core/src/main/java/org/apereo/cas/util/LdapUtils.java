@@ -780,17 +780,27 @@ public class LdapUtils {
             val cfg = new X509CredentialConfig();
             cfg.setTrustCertificates(l.getTrustCertificates());
             cc.setSslConfig(new SslConfig(cfg));
-
         } else if (l.getKeystore() != null) {
             LOGGER.debug("Creating LDAP SSL configuration via keystore [{}]", l.getKeystore());
             val cfg = new KeyStoreCredentialConfig();
+            cfg.setTrustStore(l.getTrustStore());
+            cfg.setTrustStoreType(l.getTrustStoreType());
+            cfg.setTrustStorePassword(l.getTrustStorePassword());
             cfg.setKeyStore(l.getKeystore());
             cfg.setKeyStorePassword(l.getKeystorePassword());
             cfg.setKeyStoreType(l.getKeystoreType());
             cc.setSslConfig(new SslConfig(cfg));
         } else {
             LOGGER.debug("Creating LDAP SSL configuration via the native JVM truststore");
-            cc.setSslConfig(new SslConfig());
+            if (l.getTrustStore() != null) {
+                val cfg = new KeyStoreCredentialConfig();
+                cfg.setTrustStore(l.getTrustStore());
+                cfg.setTrustStoreType(l.getTrustStoreType());
+                cfg.setTrustStorePassword(l.getTrustStorePassword());
+                cc.setSslConfig(new SslConfig(cfg));
+            } else {
+                cc.setSslConfig(new SslConfig());
+            }
         }
 
         val sslConfig = cc.getSslConfig();

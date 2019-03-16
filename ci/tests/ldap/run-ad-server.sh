@@ -1,0 +1,96 @@
+#!/bin/bash
+
+RESET=${1:-false}
+
+EXTERNAL_LDAP_PORT=10390
+EXTERNAL_LDAPS_PORT=10636
+EXTERNAL_GC_PORT=13268  # Microsoft Global Catalog
+EXTERNAL_GCS_PORT=13269 # Microsoft Global Catalog with LDAP SSL
+TMPDIR=/tmp # set this to /c/tmp if you are in windows and running tests outside of msys2
+IMAGE_NAME=hdeadman/samba-domain
+DOMAINPASS=M3110nM3110n#1
+HOST_IP=127.0.0.1
+
+# Creating self signed certificate
+DOMAIN=example.org
+ORG=cas
+SUBJECT="/C=US/ST=V/O=Apereo/CN=$DOMAIN"
+echo "Requires Openssl 1.1.1 or higher"
+openssl version
+
+# Using MSYS_NO_PATHCONV=1 in attempt to turn off msys2 bash on windows behavior of messing with subject which it thinks is path
+CERT_DIR=/tmp/sambatls
+mkdir -p ${CERT_DIR}
+if [[ ! -f ${CERT_DIR}/${ORG}.${DOMAIN}.crt ]] ; then
+    MSYS_NO_PATHCONV=1 openssl req -x509 -sha256 \
+        -newkey rsa:2048 \
+        -nodes \
+        -subj "${SUBJECT}" \
+        -keyout ${CERT_DIR}/${ORG}.${DOMAIN}.key \
+        -addext "subjectAltName = DNS:${DOMAIN},DNS:www.${DOMAIN},DNS:${ORG}.${DOMAIN},DNS:localhost,IP:127.0.0.1" \
+        -out ${CERT_DIR}/${ORG}.${DOMAIN}.crt
+fi
+
+docker stop samba
+docker rm samba
+if [[ "${RESET}" == "true" ]] ; then
+    docker volume rm samba_data
+    docker volume rm samba_conf
+    docker volume rm samba_tls
+fi
+docker volume create samba_data
+docker volume create samba_conf
+docker volume create samba_tls
+
+# note the double forward slashes in paths work around issue on windows running docker from msys2
+MSYS_NO_PATHCONV=1 docker run --name samba \
+    --mount "type=volume,source=samba_tls,destination=//etc/samba/tls" \
+    --entrypoint "sh" \
+    --detach ${IMAGE_NAME} -c "sleep 20"
+
+docker cp ${CERT_DIR}/${ORG}.${DOMAIN}.crt samba://etc/samba/tls
+docker cp ${CERT_DIR}/${ORG}.${DOMAIN}.key samba://etc/samba/tls
+docker exec samba bash -c "chmod 600 //etc/samba/tls/${ORG}.${DOMAIN}.key"
+docker stop samba
+docker rm samba
+
+# things might be easier if INSECURELDAP and NOCOMPLEXITY were true but this tests more paths
+# Allowing INSECURELDAP so JndiProvider can be tested until JDK-8217606 is fixed
+# note the double slashes in paths work around issue on windows running docker from msys2
+MSYS_NO_PATHCONV=1 docker run --detach \
+    -e "DOMAIN=${ORG}.${DOMAIN}" \
+    -e "DOMAINPASS=${DOMAINPASS}" \
+    -e "DNSFORWARDER=NONE" \
+    -e "HOSTIP=${HOST_IP}" \
+    -e "INSECURELDAP=true" \
+    -e "NOCOMPLEXITY=false" \
+    -e "USEOWNCERTS=true" \
+    -p ${EXTERNAL_LDAP_PORT}:389 \
+    -p ${EXTERNAL_LDAP_PORT}:389/udp \
+    -p ${EXTERNAL_LDAPS_PORT}:636 \
+    -p ${EXTERNAL_GC_PORT}-${EXTERNAL_GCS_PORT}:3268-3269 \
+    --mount "type=volume,source=samba_data,destination=//var/lib/samba" \
+    --mount "type=volume,source=samba_conf,destination=//etc/samba/external" \
+    --mount "type=volume,source=samba_tls,destination=//etc/samba/tls" \
+    --add-host localdc.${ORG}.${DOMAIN}:${HOST_IP} \
+    -h localdc \
+    --name samba \
+    --privileged \
+    ${IMAGE_NAME}
+
+sleep 20 # Give it time to come up before we create users
+docker logs samba
+
+echo Deleting admin user if it exists
+docker exec samba bash -c "//usr/bin/smbpasswd -s -x admin"
+echo Creating admin with complex enough password and confirmation password
+docker exec samba bash -c "echo -e 'P@ssw0rd\nP@ssw0rd' | //usr/bin/smbpasswd -s -a admin"
+
+echo Putting cert in trust store for use by unit test
+rm ${TMPDIR}/adcacerts.jks
+"$JAVA_HOME\bin\keytool" -import -noprompt -trustcacerts -file ${CERT_DIR}/${ORG}.${DOMAIN}.crt -alias AD_CERT -keystore ${TMPDIR}/adcacerts.jks -storepass changeit
+
+# For windows users using msys2
+if [[ -d /c/$TMPDIR ]] ; then
+    cp ${TMPDIR}/adcacerts.jks /c/$TMPDIR
+fi
