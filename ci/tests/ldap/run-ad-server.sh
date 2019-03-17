@@ -37,7 +37,7 @@ docker volume inspect samba_tls 2> /dev/null | grep samba_tls > /dev/null
 if [[ $? -ne 0 ]] ; then
     docker volume create samba_tls
     # running openssl in container b/c command has options requiring version > 1.1.1
-    docker run --name samba \
+    docker run --rm \
         --mount "type=volume,source=samba_tls,destination=/etc/samba/tls" \
         --entrypoint openssl ${IMAGE_NAME} \
         req -x509 -sha256 \
