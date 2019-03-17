@@ -2,7 +2,9 @@ package org.apereo.cas;
 
 import org.apereo.cas.authentication.ActiveDirectoryBindDnLdapAuthenticationHandlerTests;
 import org.apereo.cas.authentication.ActiveDirectoryBindDnSSLLdapAuthenticationHandlerTests;
-import org.apereo.cas.authentication.ActiveDirectoryLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryDNLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectorySAMAccountNameLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryUPNLdapAuthenticationHandlerTests;
 import org.apereo.cas.authentication.AuthenticatedLdapAuthenticationHandlerTests;
 import org.apereo.cas.authentication.DirectLdapAuthenticationHandlerTests;
 import org.apereo.cas.authentication.LdapPasswordSynchronizationAuthenticationPostProcessorTests;
@@ -19,7 +21,9 @@ import org.junit.platform.suite.api.SelectClasses;
 @SelectClasses({
     ActiveDirectoryBindDnLdapAuthenticationHandlerTests.class,
     ActiveDirectoryBindDnSSLLdapAuthenticationHandlerTests.class,
-    ActiveDirectoryLdapAuthenticationHandlerTests.class,
+    ActiveDirectoryDNLdapAuthenticationHandlerTests.class,
+    ActiveDirectoryUPNLdapAuthenticationHandlerTests.class,
+    ActiveDirectorySAMAccountNameLdapAuthenticationHandlerTests.class,
     AuthenticatedLdapAuthenticationHandlerTests.class,
     PersonDirectoryPrincipalResolverLdaptiveTests.class,
     DirectLdapAuthenticationHandlerTests.class,
