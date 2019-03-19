@@ -1,10 +1,10 @@
 package org.apereo.cas;
 
-import org.apereo.cas.authentication.ActiveDirectoryBindDnLdapAuthenticationHandlerTests;
-import org.apereo.cas.authentication.ActiveDirectoryBindDnSSLLdapAuthenticationHandlerTests;
-import org.apereo.cas.authentication.ActiveDirectoryDNLdapAuthenticationHandlerTests;
-import org.apereo.cas.authentication.ActiveDirectorySAMAccountNameLdapAuthenticationHandlerTests;
-import org.apereo.cas.authentication.ActiveDirectoryUPNLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryJndiBindDnLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryJndiSamAccountNameLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryJndiUPNLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryUnboundIDBindDnSSLLdapAuthenticationHandlerTests;
+import org.apereo.cas.authentication.ActiveDirectoryUnboundIDTypeADAuthenticationHandlerTests;
 import org.apereo.cas.authentication.AuthenticatedLdapAuthenticationHandlerTests;
 import org.apereo.cas.authentication.DirectLdapAuthenticationHandlerTests;
 import org.apereo.cas.authentication.LdapPasswordSynchronizationAuthenticationPostProcessorTests;
@@ -19,11 +19,11 @@ import org.junit.platform.suite.api.SelectClasses;
  * @since 4.1.0
  */
 @SelectClasses({
-    ActiveDirectoryBindDnLdapAuthenticationHandlerTests.class,
-    ActiveDirectoryBindDnSSLLdapAuthenticationHandlerTests.class,
-    ActiveDirectoryDNLdapAuthenticationHandlerTests.class,
-    ActiveDirectoryUPNLdapAuthenticationHandlerTests.class,
-    ActiveDirectorySAMAccountNameLdapAuthenticationHandlerTests.class,
+    ActiveDirectoryJndiBindDnLdapAuthenticationHandlerTests.class,
+    ActiveDirectoryUnboundIDBindDnSSLLdapAuthenticationHandlerTests.class,
+    ActiveDirectoryUnboundIDTypeADAuthenticationHandlerTests.class,
+    ActiveDirectoryJndiUPNLdapAuthenticationHandlerTests.class,
+    ActiveDirectoryJndiSamAccountNameLdapAuthenticationHandlerTests.class,
     AuthenticatedLdapAuthenticationHandlerTests.class,
     PersonDirectoryPrincipalResolverLdaptiveTests.class,
     DirectLdapAuthenticationHandlerTests.class,
