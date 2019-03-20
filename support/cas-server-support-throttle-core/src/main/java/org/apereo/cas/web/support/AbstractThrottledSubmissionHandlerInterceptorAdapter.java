@@ -157,7 +157,7 @@ public abstract class AbstractThrottledSubmissionHandlerInterceptorAdapter exten
         val lastTime = failures.get(0).getTime();
         val secondToLastTime = failures.get(1).getTime();
         val difference = lastTime - secondToLastTime;
-        val rate = NUMBER_OF_MILLISECONDS_IN_SECOND / difference;
+        val rate = difference / NUMBER_OF_MILLISECONDS_IN_SECOND;
         LOGGER.debug("Last attempt was at [{}] and the one before that was at [{}]. Difference is [{}] calculated as rate of [{}]",
             lastTime, secondToLastTime, difference, rate);
         if (rate > getThresholdRate()) {
